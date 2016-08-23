@@ -3,33 +3,38 @@ package genius.autoring;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-
-import de.greenrobot.event.EventBus;
+import android.util.Log;
 
 /**
  * Created by Hongsec on 2016-08-22.
  */
 public class AppInstalledReceiver extends BroadcastReceiver {
 
+    private String substring;
+
     @Override
     public void onReceive(Context context, Intent intent) {
 
         if (intent != null) {
+            Log.v("demo", "pkg_received");
 
             if ("android.intent.action.PACKAGE_ADDED".equalsIgnoreCase(intent.getAction())) {
-
-                    MyBus myBus =new  MyBus();
-                    myBus.action = AutoLoginHelper.PKG_ADD;
-                myBus.target_name.add(AutoLoginHelper.class.getSimpleName());
-                myBus.data = intent.getDataString().substring(8);
-                myBus.type = 1;
-                EventBus.getDefault().post(myBus);
+                 substring = intent.getDataString().substring(8);
+                Log.v("demo", "pkg_added:" + substring);
+                if (AutoInstallHelper.getInstance().missionCallback != null) {
+                    Log.v("demo", "response result");
+                    if (AutoInstallHelper.getInstance().oldMissionData.contains(substring)) {
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                AutoInstallHelper.getInstance().missionCallback.onInstalled(substring);
+                            }
+                        }).start();
+                    }
+                }
 
             }
-
         }
-
-
     }
 
 
